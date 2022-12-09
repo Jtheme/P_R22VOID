@@ -39,13 +39,23 @@
 		},
 		{
 			"Name": "AutoNodeArranger",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/565cf724479c4c2f9138b6428cfd74b1"
 		},
 		{
 			"Name": "LockOnTarget",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/d58106fca28446ec88caad16c5a35fe8"
+		},
+		{
+			"Name": "GBWThrow",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/4791c945eada4b258c3e9796dd1c43fb"
+		},
+		{
+			"Name": "BlueprintAssist",
+			"Enabled": false,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/9e895371fa3a471c87337860d6f341ff"
 		}
 	],
 	"TargetPlatforms": [
