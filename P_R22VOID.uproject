@@ -49,7 +49,7 @@
 		},
 		{
 			"Name": "GBWThrow",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/4791c945eada4b258c3e9796dd1c43fb"
 		},
 		{
