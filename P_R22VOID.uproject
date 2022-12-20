@@ -44,7 +44,7 @@
 		},
 		{
 			"Name": "LockOnTarget",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/d58106fca28446ec88caad16c5a35fe8"
 		},
 		{
@@ -59,13 +59,18 @@
 		},
 		{
 			"Name": "AutoSizeComments",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/ae89a2c4ab384de0a3f213b23de324f3"
 		},
 		{
 			"Name": "Able",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/567d7a4af24a4c0eaab75961e0686feb"
+		},
+		{
+			"Name": "GBW_Scratch",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/5167bd6c4cea4f08b4ddf213e1942c79"
 		}
 	],
 	"TargetPlatforms": [

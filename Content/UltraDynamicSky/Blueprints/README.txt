@@ -28,6 +28,7 @@ In Basic Controls, there is a setting called Sky Mode. This controls the type of
 3. 2D Dynamic Clouds - Dynamic clouds drawn using panning 2D textures.
 4. No Clouds - This mode uses no dynamic clouds at all.
 6. Volumetric Aurora - Sacrifices clouds to render full 3D aurora effects. Adjustable using the settings in the Aurora category.
+7. Space - For scenes set in outer space, with no planet/ground beneath the viewer. Disables all clouds, atmosphere, sky coloring, leaving only sun, moon and stars.
 If you decide to use Volumetric Clouds, also take note of the setting called Volumetric Cloud Rendering Mode, in the Volumetric Clouds category. It determines how the volumetric clouds are rendered and has a large impact on performance and quality. It also determines if volumetric clouds can render over opaque objects.
 -----
 SETTING THE COLOR MODE
@@ -101,10 +102,10 @@ The stars position should actually be pretty much completely accurate. This is b
 -----
 ANIMATING THE SKY WITH SEQUENCER
 -----
-Here are some tips for animating UDS using sequencer:>• To animate Time of Day directly, you should disable the "Animate Time of Day" setting on UDS, and keyframe the Time of Day variable. When animating with the Time of Day variable, it's okay to go past 2400. The system will understand this and proceed forward in time with a new day.
-• To animate the cloud coverage, you can keyframe the Cloud Coverage variable on UDS, but only if you don't have an Ultra Dynamic Weather actor in your scene. If you do, you should keyframe the Cloud Coverage variable on UDW instead. (See the sequencer section in Weather Basics for info about animating on UDW)
-• To directly animate cloud movement, first set Cloud Speed to 0 (or set Cloud Speed Multiplier to 0 on UDW if you have a UDW actor in your scene). Disable "Randomize Cloud Formation on Run" and "Clouds Move with Time of Day" as well. Then in sequencer, animate using the Cloud Phase variable. This will allow you to directly control cloud movement in a way that will play back the same way every time.
-• For tips about animating weather, see the section about sequencer in the Weather Basics chapter of the readme.
+Here are some tips for animating UDS using sequencer.Keyframing Time of Day> To animate Time of Day directly, you should disable the "Animate Time of Day" setting on UDS, and keyframe the Time of Day variable. When animating with the Time of Day variable, it's okay to go past 2400. The system will understand this and proceed forward in time with a new day.Keyframing Cloud Coverage> To animate the cloud coverage, you can keyframe the Cloud Coverage variable on UDS, but only if you don't have an Ultra Dynamic Weather actor in your scene. If you do, you should keyframe the Cloud Coverage variable
+ on UDW instead. (See the sequencer section in Weather Basics for info about animating on UDW)Keyframing Cloud Movement> To directly animate cloud movement, first set Cloud Speed to 0 (or set Cloud Speed Multiplier to 0 on UDW if you have a UDW actor in your scene). Disable "Randomize Cloud Formation on Run" and "Clouds Move with Time of Day" as well. Then in sequencer, animate using the Cloud Phase variable. This will allow you to directly control cloud movement in a way that will play back the same way every time.Rendering a Movie>If you're rendering out a movie using sequencer, make sure to
+ change Project Mode on UDS to "Cinematic / Offline". This configures the sky for maximum quality while rendering, disabling many optimizations that are useful only in real-time rendering scenarios. If rendering a movie using the path tracer, also take note of the option on UDS, "Adjust for Path Tracer".
+If your project does need real-time performance at runtime normally , be sure to turn Project Mode back to Game / Real-time after completing your movie render, or game performance will be severely compromised.For tips about animating weather, see the section about sequencer in the Weather Basics section of the readme.
 -----
 OPTIMIZING FOR PERFORMANCE
 -----
@@ -153,6 +154,19 @@ Each entry has post process settings, where you can override and modify any post
 1. Checkboxes to Enable/Disable this post process component based on the time of day. This will control the blend weight of the component, fading it in and out based on the current time.
 2. Checkboxes to mask the component with cloud coverage, fog, dust, or interior occlusion. For example, if you checked "Mask Blend Weight When Overcast", the post settings for this component would fade away as the sky becomes overcast.
 By adding entries to this array, you can customize the post processing settings for any specific condition.
+-----
+ADDING ADDITIONAL PLANETS / MOONS USING THE SPACE LAYER
+-----
+UDS can render additional planets and moons, to the sky layer, correctly composited so they block stars, but are obscured behind clouds and aurora.
+The place to do this is the Space Layer category on UDS. You can either manually add planets to the Planets / Moons array in that category, or you can start with one of the presets by selecting something for "Add Planet / Moon Preset".
+Within the Planets / Moons array, you can customize the look and behavior of each planet.
+All of the settings have tooltips, but here are a few key ones to note:>- Parent controls what the planet will move with. It can be parented to the sun, the moon, or it can be left unparented so it doesn't move, or could potentially be moved manually.
+- Relative Rotation rotates the orientation of the planet, relative to what it's been parented to.
+- Scale sets the visual scale of the planet.
+- The Terminatior settings refer to the solar terminator, the line between the light and dark sides of the planet.
+- The Light Vector controls where the light source determining the light/dark side of the planet will come from. The sun, the moon, or the custom vector.
+- The Glow settings control an additional element, which renders a diffuse atmospheric glow around the planet. The brightness depends on how much of the lit side is facing the camera, and is scaled with the setting Space Glow Brightness in the Space Layer category.The space layer draws these additional planets into the sky material using the dbuffer. So Dbuffer Decals should be enabled in your project, and need to be supported by the platform, for these planets/moons to be rendered.
+Also note, Unreal 5.0 did not support mesh decal objects being sorted, so while this feature can be used in 5.0, the individual objects can't overlap each other without potential sorting errors. This isn't a problem in 5.1, where mesh decal sorting was added to the engine. In 5.1, the planets will be sorted from first to last, based on their order in the array.
 -----
 USING ULTRA DYNAMIC SKY WITH THE PATH TRACER
 -----
@@ -318,11 +332,11 @@ You could have your actor call this function periodically, and respond when the 
 -----
 USING WEATHER WITH SEQUENCER
 -----
-Here are some tips for how the weather system can be animated using sequencer.>• To animate the current weather state manually using sequencer, you'll want to use the Manual Weather State, keyframing the variables in that category. To enable the Manual Weather State, clear the Weather variable in Basic Controls, so that no weather preset is selected.
-• To animate cloud movement in a way that will play back the same every time: First, set Cloud Speed Multiplier to 0 on UDW. Then, turn off Randomize Cloud Formation On Run, in Cloud Movement on UDS. Then in Sequencer, animate the Cloud Phase variable on UDS. This will allow directly controlling cloud movement with keyframes.
-• When previewing a sequence that contains rain/snow/dust, note that the particles will not be visible during the playback preview in editor. This is just a limitation of sequencer's preview. It's unfortunate, but as of now there is no workaround. To test how particles are looking at a specific place in the animation, pause the playback there and the particles should resume.
-• Lightning flashes, being animated by blueprint logic, will not be visible when previewing sequences either, though they will be visible if rendering a sequence or running one in game. If you want direct control over the timing of lightning flashes in your animation, disable Spawn Lightning Flashes on UDW, and run the UDW function Flash Lightning using an event track on your sequence. The Flash Lightning function also has inputs for providing a custom location for the lightning flash. With all of this together, you can animate lightning to flash at the specific time and place in the animation
- that you want.
+Here are some tips for how the weather system can be animated using sequencer.Keyframing the Weather State>To animate the current weather state manually using sequencer, you'll want to use the Manual Weather State, keyframing the variables in that category. To enable the Manual Weather State, clear the Weather variable in Basic Controls, so that no weather preset is selected.Keyframing the Material Effects>If you're keyframing the Material Wetness, Material Snow Coverage, or Material Dust Coverage directly, you'll need to make one change to have those keyframes work the same at runtime as they
+ do in your sequence. In the Material Effects category, disable "Material Effects Take Time To Change". This will make it so at runtime the material effects show exactly as they're keyframed at each frame, instead of changing gradually with weather state.Keyframing Cloud Movement>To animate cloud movement in a way that will play back the same every time: First, set Cloud Speed Multiplier to 0 on UDW. Then, turn off Randomize Cloud Formation On Run, in Cloud Movement on UDS. Then in Sequencer, keyframe the Cloud Phase variable on UDS. This will allow directly controlling cloud movement with key
+frames.Weather Particles in Sequence Editor>When previewing a sequence where UDW is bound to the sequence, note that the weather particles will not be visible during the playback preview in editor. This is just a limitation of sequencer's preview, not something which will be present at runtime/in a render. It's because the only way the sequence editor has to update bound blueprints is by re-running their construction script, which restarts niagara components. To test how particles are looking at a specific place in the animation, pause the playback there and the particles should resume.Keyfram
+ing a Lightning Flash>Lightning flashes, being animated by blueprint logic, will not be visible when previewing sequences, though they will be visible if rendering a sequence or running one in game. If you want direct control over the timing of lightning flashes in your animation, disable Spawn Lightning Flashes on UDW, and run the UDW function Flash Lightning using a trigger event track on your sequence. The Flash Lightning function also has inputs for providing a custom location for the lightning flash. Note the location it takes should be the place the bolt starts, so it should be up at the
+ height of the clouds.Rendering a Movie>Just as with keyframing things on UDS, take note of the Project Mode setting on UDS, if you need to render a movie for offline playback. Change that setting on UDS to "Cinematic / Offline", to force max quality for the sky rendering and force both blueprints to update completely every frame at runtime.
 -----
 MATERIAL EFFECTS FOR SPECIAL CASES
 -----
