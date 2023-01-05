@@ -1,0 +1,7 @@
+{
+	"OutputFiles": [
+		"NISBlueprint.init.gen.cpp.obj",
+		"NISLibrary.gen.cpp.obj",
+		"NISLibrary.cpp.obj"
+	]
+}

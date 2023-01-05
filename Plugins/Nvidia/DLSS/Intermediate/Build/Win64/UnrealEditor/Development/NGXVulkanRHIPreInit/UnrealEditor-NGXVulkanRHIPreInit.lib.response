@@ -1,0 +1,12 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UnrealEditor-NGXVulkanRHIPreInit.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"C:\Users\Jesse\Documents\Unreal Projects\P_R22VOID\Intermediate\Build\Win64\P_R22VOIDEditor\Development\Engine\SharedPCH.Engine.ShadowErrors.h.obj"
+"C:\Users\Jesse\Documents\Unreal Projects\P_R22VOID\Plugins\Nvidia\DLSS\Intermediate\Build\Win64\UnrealEditor\Development\NGXVulkanRHIPreInit\NGXVulkanRHIPreInit.cpp.obj"
+"C:\Users\Jesse\Documents\Unreal Projects\P_R22VOID\Plugins\Nvidia\DLSS\Intermediate\Build\Win64\UnrealEditor\Development\NGXVulkanRHIPreInit\Default.rc2.res"
+/OUT:"C:\Users\Jesse\Documents\Unreal Projects\P_R22VOID\Plugins\Nvidia\DLSS\Intermediate\Build\Win64\UnrealEditor\Development\NGXVulkanRHIPreInit\UnrealEditor-NGXVulkanRHIPreInit.lib"

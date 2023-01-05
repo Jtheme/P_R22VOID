@@ -1,0 +1,13 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UnrealEditor-DLSSBlueprint.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"C:\Users\Jesse\Documents\Unreal Projects\P_R22VOID\Intermediate\Build\Win64\P_R22VOIDEditor\Development\Engine\SharedPCH.Engine.ShadowErrors.h.obj"
+"C:\Users\Jesse\Documents\Unreal Projects\P_R22VOID\Plugins\Nvidia\DLSS\Intermediate\Build\Win64\UnrealEditor\Development\DLSSBlueprint\DLSSBlueprint.init.gen.cpp.obj"
+"C:\Users\Jesse\Documents\Unreal Projects\P_R22VOID\Plugins\Nvidia\DLSS\Intermediate\Build\Win64\UnrealEditor\Development\DLSSBlueprint\DLSSLibrary.cpp.obj"
+"C:\Users\Jesse\Documents\Unreal Projects\P_R22VOID\Plugins\Nvidia\DLSS\Intermediate\Build\Win64\UnrealEditor\Development\DLSSBlueprint\Default.rc2.res"
+/OUT:"C:\Users\Jesse\Documents\Unreal Projects\P_R22VOID\Plugins\Nvidia\DLSS\Intermediate\Build\Win64\UnrealEditor\Development\DLSSBlueprint\UnrealEditor-DLSSBlueprint.lib"
