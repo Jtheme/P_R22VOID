@@ -95,6 +95,27 @@
 			"Name": "DLSSMoviePipelineSupport",
 			"Enabled": false,
 			"MarketplaceURL": "https://www.unrealengine.com/marketplace/en-US/product/nvidia-dlss"
+		},
+		{
+			"Name": "AISplineBasedMovementSystem",
+			"Enabled": false,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/fab736165c464f52898941670eccb270"
+		},
+		{
+			"Name": "AIOptimizer",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/e91ece0a286e463e8a933a6c0edb83ed"
+		},
+		{
+			"Name": "DBTween",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/bc7fcf7d4e60450ca51158289d355ff4",
+			"SupportedTargetPlatforms": [
+				"Mac",
+				"Win64",
+				"Android",
+				"IOS"
+			]
 		}
 	],
 	"TargetPlatforms": [
