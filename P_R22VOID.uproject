@@ -116,6 +116,11 @@
 				"Android",
 				"IOS"
 			]
+		},
+		{
+			"Name": "BehaviorTreeExtension",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/580e89a1485049599d8c0e8ab19b5a2d"
 		}
 	],
 	"TargetPlatforms": [
