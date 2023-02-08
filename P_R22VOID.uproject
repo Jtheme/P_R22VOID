@@ -69,12 +69,12 @@
 		},
 		{
 			"Name": "GBW_Scratch",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/5167bd6c4cea4f08b4ddf213e1942c79"
 		},
 		{
 			"Name": "DidItHit",
-			"Enabled": true
+			"Enabled": false
 		},
 		{
 			"Name": "DLSS",
@@ -124,7 +124,7 @@
 		},
 		{
 			"Name": "CheckCompileBP",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/be3b2113774d4c919b374108984ca3fc"
 		},
 		{
@@ -162,6 +162,11 @@
 			"Name": "SimpleProceduralWalk",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/8a28b64a488448d2bb1bf46d7d36d858"
+		},
+		{
+			"Name": "DragonIKPlugin",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/3f3985e9eb40414aaabf645791fa4916"
 		}
 	],
 	"TargetPlatforms": [
