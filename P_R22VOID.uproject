@@ -157,6 +157,11 @@
 			"Name": "GBWPowerfulHit",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/68a19cc3b574484ab65c96a4b8e8c135"
+		},
+		{
+			"Name": "SimpleProceduralWalk",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/8a28b64a488448d2bb1bf46d7d36d858"
 		}
 	],
 	"TargetPlatforms": [
