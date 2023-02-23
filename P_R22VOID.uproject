@@ -119,7 +119,7 @@
 		},
 		{
 			"Name": "BehaviorTreeExtension",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/580e89a1485049599d8c0e8ab19b5a2d"
 		},
 		{
@@ -167,6 +167,17 @@
 			"Name": "DragonIKPlugin",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/3f3985e9eb40414aaabf645791fa4916"
+		},
+		{
+			"Name": "ShaderWorld",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/519f5dc62d714ba8b116e4763ba1e542",
+			"SupportedTargetPlatforms": [
+				"IOS",
+				"Win64",
+				"Mac",
+				"Linux"
+			]
 		}
 	],
 	"TargetPlatforms": [
