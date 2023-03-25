@@ -189,6 +189,11 @@
 			"Name": "NumberRenderer",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/16f891500ac247f5b807ed13b38ade36"
+		},
+		{
+			"Name": "ActorPooling",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/e0ef952aa1b04378839869ae3dd13acd"
 		}
 	],
 	"TargetPlatforms": [
