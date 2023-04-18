@@ -1,0 +1,178 @@
+// Copyright 2023 Dmitry Karpukhin. All Rights Reserved.
+
+#include "SSFSCommon.ush"
+
+float2 InputSize;
+float2 SceneColorUVScale;
+Texture2D DepthTexture;
+Texture3D IntegratedLightScattering;
+float4 ExponentialFogParameters;
+float4 ExponentialFogParameters2;
+float4 ExponentialFogParameters3;
+float FogMaxOpacity;
+float ApplyVolumetricFog;
+float VolumetricFogStartDistance;
+float Intensity;
+RWTexture2D<float4> Output;
+
+static const float FLT_EPSILON = 0.001f;
+static const float FLT_EPSILON2 = 0.01f;
+
+// These slightly modified fog functions are from "Engine\Shaders\Private\HeightFogCommon.ush"
+// Cannot include it directly because of tricky shader bindings, so we have to just copy it to re-calculate the fog in the Setup pass
+
+// FogStruct.ExponentialFogParameters: FogDensity * exp2(-FogHeightFalloff * (CameraWorldPosition.z - FogHeight)) in x, FogHeightFalloff in y, MaxWorldObserverHeight in z, StartDistance in w. 
+// FogStruct.ExponentialFogParameters2: FogDensitySecond * exp2(-FogHeightFalloffSecond * (CameraWorldPosition.z - FogHeightSecond)) in x, FogHeightFalloffSecond in y, FogDensitySecond in z, FogHeightSecond in w 
+// FogStruct.ExponentialFogParameters3: FogDensity in x, FogHeight in y, whether to use cubemap fog color in z, FogCutoffDistance in w. 
+// FogStruct.FogInscatteringTextureParameters: mip distance scale in x, bias in y, num mips in z 
+
+// Calculate the line integral of the ray from the camera to the receiver position through the fog density function
+// The exponential fog density function is d = GlobalDensity * exp(-HeightFalloff * z)
+float CalculateLineIntegralShared(float FogHeightFalloff, float RayDirectionZ, float RayOriginTerms)
+{
+	const float Falloff = max(-127.0f, FogHeightFalloff * RayDirectionZ);    // if it's lower than -127.0, then exp2() goes crazy in OpenGL's GLSL.
+	const float LineIntegral = ( 1.0f - exp2(-Falloff) ) / Falloff;
+	const float LineIntegralTaylor = log(2.0) - ( 0.5 * Pow2( log(2.0) ) ) * Falloff;		// Taylor expansion around 0
+	
+	return RayOriginTerms * ( abs(Falloff) > FLT_EPSILON2 ? LineIntegral : LineIntegralTaylor );
+}
+
+half GetExponentialHeightFog(float3 WorldPositionRelativeToCamera, float ExcludeDistance)
+{
+	const float MinFogOpacity = FogMaxOpacity;
+	const float MaxWorldObserverHeight = ExponentialFogParameters.z;
+
+#if IS_UE5
+	const float3 WorldObserverOrigin = float3(LWCHackToFloat(PrimaryView.WorldCameraOrigin).xy, min(LWCHackToFloat(PrimaryView.WorldCameraOrigin).z, MaxWorldObserverHeight)); // Clamp z to max height
+#else
+	const float3 WorldObserverOrigin = float3(View.WorldCameraOrigin.xy, min(View.WorldCameraOrigin.z, MaxWorldObserverHeight)); // Clamp z to max height
+#endif
+	
+	float3 CameraToReceiver = WorldPositionRelativeToCamera;
+#if IS_UE5
+	CameraToReceiver.z += LWCHackToFloat(PrimaryView.WorldCameraOrigin).z - WorldObserverOrigin.z; // Compensate this vector for clamping the observer height
+#else
+	CameraToReceiver.z += View.WorldCameraOrigin.z - WorldObserverOrigin.z; // Compensate this vector for clamping the observer height
+#endif
+	
+	const float CameraToReceiverLengthSqr = dot(CameraToReceiver, CameraToReceiver);
+	const float CameraToReceiverLengthInv = rsqrt(CameraToReceiverLengthSqr);
+	const float CameraToReceiverLength = CameraToReceiverLengthSqr * CameraToReceiverLengthInv;
+	//half3 CameraToReceiverNormalized = CameraToReceiver * CameraToReceiverLengthInv;
+
+	float RayOriginTerms = ExponentialFogParameters.x;
+	float RayOriginTermsSecond = ExponentialFogParameters2.x;
+	float RayLength = CameraToReceiverLength;
+	float RayDirectionZ = CameraToReceiver.z;
+	
+	// Factor in StartDistance
+	ExcludeDistance = max(ExcludeDistance, ExponentialFogParameters.w);
+	
+	if (ExcludeDistance > 0)
+	{
+		const float ExcludeIntersectionTime = ExcludeDistance * CameraToReceiverLengthInv;
+		const float CameraToExclusionIntersectionZ = ExcludeIntersectionTime * CameraToReceiver.z;
+		const float ExclusionIntersectionZ = WorldObserverOrigin.z + CameraToExclusionIntersectionZ;
+		const float ExclusionIntersectionToReceiverZ = CameraToReceiver.z - CameraToExclusionIntersectionZ;
+
+		// Calculate fog off of the ray starting from the exclusion distance, instead of starting from the camera
+		RayLength = (1.0f - ExcludeIntersectionTime) * CameraToReceiverLength;
+		RayDirectionZ = ExclusionIntersectionToReceiverZ;
+
+		const float Exponent = max(-127.0f, ExponentialFogParameters.y * (ExclusionIntersectionZ - ExponentialFogParameters3.y));
+		RayOriginTerms = ExponentialFogParameters3.x * exp2(-Exponent);
+	
+		const float ExponentSecond = max(-127.0f, ExponentialFogParameters2.y * (ExclusionIntersectionZ - ExponentialFogParameters2.w)); 	 
+		RayOriginTermsSecond = ExponentialFogParameters2.z * exp2(-ExponentSecond);
+	}
+
+	float ExponentialHeightLineIntegralShared = CalculateLineIntegralShared(ExponentialFogParameters.y, RayDirectionZ, RayOriginTerms);
+	ExponentialHeightLineIntegralShared+= CalculateLineIntegralShared(ExponentialFogParameters2.y, RayDirectionZ, RayOriginTermsSecond);
+
+	const float ExponentialHeightLineIntegral = ExponentialHeightLineIntegralShared * RayLength;
+
+	// Calculate the amount of light that made it through the fog using the transmission equation
+	const float ExpFogFactor = max(saturate(exp2(-ExponentialHeightLineIntegral)), 1 - MinFogOpacity);
+
+	return 1 - ExpFogFactor;
+}
+
+half CalculateHeightFog(float3 WorldPositionRelativeToCamera)
+{
+	float ExcludeDistance = 0;
+
+	if (ApplyVolumetricFog > 0)
+	{
+		float InvCosAngle = length(WorldPositionRelativeToCamera) / dot(WorldPositionRelativeToCamera, View.ViewForward);
+		// Volumetric fog covers up to MaxDistance along ViewZ, exclude analytical fog from this range
+		ExcludeDistance = max(View.VolumetricFogMaxDistance * InvCosAngle, 0);
+	}
+
+	float FogInscatteringAndOpacity = GetExponentialHeightFog(WorldPositionRelativeToCamera, ExcludeDistance);
+	return FogInscatteringAndOpacity;
+}
+
+float4 CombineVolumetricFog(float GlobalFog, float3 VolumeUV, uint EyeIndex, float SceneDepth)
+{
+	float4 VolumetricFogLookup = float4(0, 0, 0, 1);
+
+	if (ApplyVolumetricFog > 0)
+	{
+		VolumetricFogLookup = Texture3DSampleLevel(IntegratedLightScattering, View.SharedBilinearClampedSampler, VolumeUV, 0);
+	}
+
+	// Do not apply the Froxel volumetric texture in front of the fog start distance. (the soft fading occur in FinalIntegrationCS).
+	// We go with a quickly increasing step function because the soft fade in from start distance occurs in FinalIntegrationCS.
+	VolumetricFogLookup = lerp(float4(0, 0, 0, 1), VolumetricFogLookup, saturate((SceneDepth - VolumetricFogStartDistance) * 100000000.0f));
+
+	return float4(VolumetricFogLookup.rgb + GlobalFog * VolumetricFogLookup.a, 1 - VolumetricFogLookup.a + GlobalFog);
+}
+
+// Copied from "/Engine/Private/PositionReconstructionCommon.ush"
+// But it needs a slight tweak for compatibility reasons with UE4
+float3 ReconstructWorldPositionFromDepth(float2 UV, float Depth)
+{
+	float2 ScreenPosition = (UV - View.ScreenPositionScaleBias.wz) / View.ScreenPositionScaleBias.xy;
+#if IS_UE5
+	float4 HomogeneousWorldPosition = mul(float4(ScreenPosition * Depth, Depth, 1), LWCHackToFloat(PrimaryView.ScreenToWorld));
+#else
+	float4 HomogeneousWorldPosition = mul(float4(ScreenPosition * Depth, Depth, 1), View.ScreenToWorld);
+#endif
+	
+	float3 WorldPosition = HomogeneousWorldPosition.xyz / HomogeneousWorldPosition.w;
+
+	return WorldPosition;
+}
+
+[numthreads(GROUP_SIZE, GROUP_SIZE, 1)]
+void SetupCS(uint2 DispatchThreadId : SV_DispatchThreadID)
+{
+	// Check that we are in scope
+	if (any(DispatchThreadId >= ViewportRect.zw))
+	{
+		return;
+	}
+
+	const float2 UV = ((float2(View.ViewRectMin.xy) + (DispatchThreadId + 0.5)) * ViewportInvSize) * UVScale;
+
+	float3 SceneColor = Texture2DSample(InputTexture, InputSampler, UV);
+	const float SceneDepthRaw = Texture2DSample(DepthTexture, InputSampler, UV).r;
+	const float SceneDepth = ConvertFromDeviceZ(SceneDepthRaw);
+
+	float3 WorldPosition = ReconstructWorldPositionFromDepth(UV, SceneDepth);
+#if IS_UE5
+	float3 CameraPosition = View.RelativeWorldCameraOrigin;
+#else
+	float3 CameraPosition = View.WorldViewOrigin;
+#endif
+
+	float ZSlice = log2(SceneDepth * View.VolumetricFogGridZParams.x + View.VolumetricFogGridZParams.y) * View.VolumetricFogGridZParams.z * View.VolumetricFogInvGridSize.z;
+	const float3 VolumeUV = float3((DispatchThreadId + 0.5) * View.VolumetricFogSVPosToVolumeUV, ZSlice);
+
+	const float HeightFogOpacity = CalculateHeightFog(WorldPosition - CameraPosition);
+	float4 FinalFogDensity = saturate(CombineVolumetricFog(HeightFogOpacity, VolumeUV, 0, SceneDepth)) * Intensity;
+	
+	float DesaturatedFogDensity = dot(FinalFogDensity.rgb, float3(0.3, 0.59, 0.11));
+	
+	Output[View.ViewRectMin.xy + DispatchThreadId] = float4(SceneColor * FinalFogDensity.a, FinalFogDensity.a);
+}

@@ -189,6 +189,11 @@
 			"Name": "ActorPooling",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/e0ef952aa1b04378839869ae3dd13acd"
+		},
+		{
+			"Name": "ScreenSpaceFogScattering",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/260929cfa39b43238302154c98311fc7"
 		}
 	],
 	"TargetPlatforms": [
